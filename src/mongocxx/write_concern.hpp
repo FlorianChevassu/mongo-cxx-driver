@@ -237,6 +237,11 @@ class MONGOCXX_API write_concern {
     ///
     bsoncxx::document::value to_document() const;
 
+    class MONGOCXX_PRIVATE impl;
+
+    MONGOCXX_PRIVATE write_concern(std::unique_ptr<impl>&& implementation);
+
+
    private:
     friend bulk_write;
     friend client;
@@ -257,10 +262,6 @@ class MONGOCXX_API write_concern {
     ///
     /// @}
     ///
-
-    class MONGOCXX_PRIVATE impl;
-
-    MONGOCXX_PRIVATE write_concern(std::unique_ptr<impl>&& implementation);
 
     std::unique_ptr<impl> _impl;
 };

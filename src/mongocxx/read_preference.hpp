@@ -238,6 +238,10 @@ class MONGOCXX_API read_preference {
     ///
     stdx::optional<std::chrono::seconds> max_staleness() const;
 
+    class MONGOCXX_PRIVATE impl;
+
+    MONGOCXX_PRIVATE read_preference(std::unique_ptr<impl>&& implementation);
+
    private:
     friend client;
     friend collection;
@@ -260,10 +264,6 @@ class MONGOCXX_API read_preference {
     ///
     /// @}
     ///
-
-    class MONGOCXX_PRIVATE impl;
-
-    MONGOCXX_PRIVATE read_preference(std::unique_ptr<impl>&& implementation);
 
     std::unique_ptr<impl> _impl;
 };

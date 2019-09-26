@@ -144,6 +144,9 @@ class MONGOCXX_API read_concern {
     ///
     stdx::string_view acknowledge_string() const;
 
+    class MONGOCXX_PRIVATE impl;
+
+    MONGOCXX_PRIVATE read_concern(std::unique_ptr<impl>&& implementation);
    private:
     friend client;
     friend collection;
@@ -164,9 +167,6 @@ class MONGOCXX_API read_concern {
     /// @}
     ///
 
-    class MONGOCXX_PRIVATE impl;
-
-    MONGOCXX_PRIVATE read_concern(std::unique_ptr<impl>&& implementation);
 
     std::unique_ptr<impl> _impl;
 };
