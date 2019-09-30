@@ -192,7 +192,9 @@ if(MONGOCXX_BUILD_STATIC)
 endif()
 mongocxx_install("${mongocxx_target_list}" "${mongocxx_pkg_dep}")
 
-add_subdirectory(test)
+if(MONGOCXX_BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 set_local_dist (src_mongocxx_DIST_local
    CMakeLists.txt

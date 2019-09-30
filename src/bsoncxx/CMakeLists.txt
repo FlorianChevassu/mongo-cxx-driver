@@ -168,7 +168,9 @@ if(BSONCXX_BUILD_STATIC)
 endif()
 bsoncxx_install("${bsoncxx_target_list}" "${bsoncxx_pkg_dep}")
 
-add_subdirectory(test)
+if(BSONCXX_BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 set_local_dist (src_bsoncxx_DIST_local
    CMakeLists.txt

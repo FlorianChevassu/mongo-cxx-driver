@@ -188,139 +188,155 @@ set (BUILD_SOURCE_DIR ${CMAKE_BINARY_DIR})
 
 include (MakeDistFiles)
 
-add_custom_target(hugo_dir
-    COMMAND ${CMAKE_COMMAND} -E make_directory hugo
-)
+option(BUILD_DOCS "Build documentation" OFF)
+if(BUILD_DOCS)
+    add_custom_target(hugo_dir
+        COMMAND ${CMAKE_COMMAND} -E make_directory hugo
+    )
 
-add_custom_target(hugo
-    DEPENDS hugo_dir
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs
-    COMMAND hugo
-    VERBATIM
-)
+    add_custom_target(hugo
+        DEPENDS hugo_dir
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs
+        COMMAND hugo
+        VERBATIM
+    )
 
-add_custom_target(hugo-deploy
-    DEPENDS hugo
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/deploy-to-ghpages.pl --hugo git@github.com:mongodb/mongo-cxx-driver
-    VERBATIM
-)
+    add_custom_target(hugo-deploy
+        DEPENDS hugo
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/deploy-to-ghpages.pl --hugo git@github.com:mongodb/mongo-cxx-driver
+        VERBATIM
+    )
 
-add_custom_target(docs_dir_current
-    COMMAND ${CMAKE_COMMAND} -E make_directory docs/api/current
-)
+    add_custom_target(docs_dir_current
+        COMMAND ${CMAKE_COMMAND} -E make_directory docs/api/current
+    )
 
-add_custom_target(doxygen-current
-    DEPENDS docs_dir_current
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
-    VERBATIM
-)
+    add_custom_target(doxygen-current
+        DEPENDS docs_dir_current
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+        VERBATIM
+    )
 
-add_custom_target(doxygen-all
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/generate-all-apidocs.pl
-    VERBATIM
-)
+    add_custom_target(doxygen-all
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/generate-all-apidocs.pl
+        VERBATIM
+    )
 
-add_custom_target(doxygen-deploy
-    DEPENDS doxygen-all
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/deploy-to-ghpages.pl --doxygen git@github.com:mongodb/mongo-cxx-driver
-    VERBATIM
-)
+    add_custom_target(doxygen-deploy
+        DEPENDS doxygen-all
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/deploy-to-ghpages.pl --doxygen git@github.com:mongodb/mongo-cxx-driver
+        VERBATIM
+    )
 
-add_custom_target(format
-    python ${CMAKE_SOURCE_DIR}/etc/clang_format.py format
-    VERBATIM
-)
+    add_custom_target(format
+        python ${CMAKE_SOURCE_DIR}/etc/clang_format.py format
+        VERBATIM
+    )
 
-add_custom_target(format-lint
-    python ${CMAKE_SOURCE_DIR}/etc/clang_format.py lint
-    VERBATIM
-)
+    add_custom_target(format-lint
+        python ${CMAKE_SOURCE_DIR}/etc/clang_format.py lint
+        VERBATIM
+    )
 
-add_custom_target(docs
-    DEPENDS hugo doxygen-current
-)
+    add_custom_target(docs
+        DEPENDS hugo doxygen-current
+    )
+endif()
 
 set(THIRD_PARTY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/third_party)
 
-enable_testing()
+option(BUILD_TESTING "Build tests" OFF)
+if(BUILD_TESTING)
+    enable_testing()
+endif()
 
 add_subdirectory(src)
 
-add_subdirectory(examples EXCLUDE_FROM_ALL)
+option(BUILD_EXAMPLES "Build examples" OFF)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples EXCLUDE_FROM_ALL)
+endif()
 
-add_subdirectory(benchmark EXCLUDE_FROM_ALL)
+if(BUILD_TESTING)
+    add_subdirectory(benchmark EXCLUDE_FROM_ALL)
+endif()
 
-# Implement 'dist' target
-#
-# CMake does not implement anything like 'dist' from autotools.
-# This implementation is based on the one in GnuCash.
 
-add_subdirectory (cmake)
-add_subdirectory (data)
-add_subdirectory (docs)
-add_subdirectory (etc)
+option(BUILD_DIST "Build dist" OFF)
+if(BUILD_DIST)
 
-set (PACKAGE_PREFIX "mongo-cxx-driver-r${BUILD_VERSION}")
-set (DIST_FILE "${PACKAGE_PREFIX}.tar.gz")
+    # Implement 'dist' target
+    #
+    # CMake does not implement anything like 'dist' from autotools.
+    # This implementation is based on the one in GnuCash.
 
-set (top_DIST_local
-   CMakeLists.txt
-   CONTRIBUTING.md
-   CREDITS.json
-   LICENSE
-   README.md
-   THIRD-PARTY-NOTICES
-   build/.gitignore
-   build/VERSION_CURRENT
-)
+    add_subdirectory (cmake)
+    add_subdirectory (data)
+    add_subdirectory (docs)
+    add_subdirectory (etc)
 
-set_local_dist (top_DIST ${top_DIST_local})
+    set (PACKAGE_PREFIX "mongo-cxx-driver-r${BUILD_VERSION}")
+    set (DIST_FILE "${PACKAGE_PREFIX}.tar.gz")
 
-set (ALL_DIST
-   ${top_DIST}
-   ${benchmark_DIST}
-   ${cmake_DIST}
-   ${docs_DIST}
-   ${data_DIST}
-   ${etc_DIST}
-   ${examples_DIST}
-   ${src_DIST}
-)
+    set (top_DIST_local
+       CMakeLists.txt
+       CONTRIBUTING.md
+       CREDITS.json
+       LICENSE
+       README.md
+       THIRD-PARTY-NOTICES
+       build/.gitignore
+       build/VERSION_CURRENT
+    )
 
-# Write a dist manifest
-string (REPLACE ";" "\n" ALL_DIST_LINES "${ALL_DIST}")
-file (WRITE ${CMAKE_BINARY_DIR}/dist_manifest.txt ${ALL_DIST_LINES})
+    set_local_dist (top_DIST ${top_DIST_local})
 
-install (FILES LICENSE README.md THIRD-PARTY-NOTICES
-   DESTINATION ${CMAKE_INSTALL_DATADIR}/mongo-cxx-driver
-)
+    set (ALL_DIST
+       ${top_DIST}
+       ${benchmark_DIST}
+       ${cmake_DIST}
+       ${docs_DIST}
+       ${data_DIST}
+       ${etc_DIST}
+       ${examples_DIST}
+       ${src_DIST}
+    )
 
-# This is the command that produces the distribution tarball
-add_custom_command (OUTPUT ${DIST_FILE}
-   COMMAND ${CMAKE_COMMAND}
-      -D CMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake/make_dist
-      -D PACKAGE_PREFIX=${PACKAGE_PREFIX}
-      -D MONGOCXX_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-      -D BUILD_SOURCE_DIR=${BUILD_SOURCE_DIR}
-      -D SHELL=${SHELL}
-      "-Ddist_generated=\"${dist_generated}\""
-      -P ${PROJECT_SOURCE_DIR}/cmake/make_dist/MakeDist.cmake
+    # Write a dist manifest
+    string (REPLACE ";" "\n" ALL_DIST_LINES "${ALL_DIST}")
+    file (WRITE ${CMAKE_BINARY_DIR}/dist_manifest.txt ${ALL_DIST_LINES})
 
-   DEPENDS
-      ${ALL_DIST} ${dist_generated_depends}
-)
+    install (FILES LICENSE README.md THIRD-PARTY-NOTICES
+       DESTINATION ${CMAKE_INSTALL_DATADIR}/mongo-cxx-driver
+    )
 
-add_custom_target (dist DEPENDS ${DIST_FILE})
+    # This is the command that produces the distribution tarball
+    add_custom_command (OUTPUT ${DIST_FILE}
+       COMMAND ${CMAKE_COMMAND}
+          -D CMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake/make_dist
+          -D PACKAGE_PREFIX=${PACKAGE_PREFIX}
+          -D MONGOCXX_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+          -D BUILD_SOURCE_DIR=${BUILD_SOURCE_DIR}
+          -D SHELL=${SHELL}
+          "-Ddist_generated=\"${dist_generated}\""
+          -P ${PROJECT_SOURCE_DIR}/cmake/make_dist/MakeDist.cmake
 
-add_custom_target (distcheck DEPENDS dist
-   COMMAND ${CMAKE_COMMAND}
-      -D CMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake/make_dist
-      -D CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
-      -D PACKAGE_PREFIX=${PACKAGE_PREFIX}
-      -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-      -P ${PROJECT_SOURCE_DIR}/cmake/make_dist/MakeDistCheck.cmake
-)
+       DEPENDS
+          ${ALL_DIST} ${dist_generated_depends}
+    )
+
+    add_custom_target (dist DEPENDS ${DIST_FILE})
+
+    add_custom_target (distcheck DEPENDS dist
+       COMMAND ${CMAKE_COMMAND}
+          -D CMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake/make_dist
+          -D CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}
+          -D PACKAGE_PREFIX=${PACKAGE_PREFIX}
+          -D CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+          -P ${PROJECT_SOURCE_DIR}/cmake/make_dist/MakeDistCheck.cmake
+    )
+endif()
