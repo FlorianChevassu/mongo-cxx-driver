@@ -89,68 +89,79 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_custom_target(hugo_dir
-    COMMAND ${CMAKE_COMMAND} -E make_directory hugo
-)
+option(BUILD_DOCS "Build documentation" OFF)
+if(BUILD_DOCS)
+    add_custom_target(hugo_dir
+        COMMAND ${CMAKE_COMMAND} -E make_directory hugo
+    )
 
-add_custom_target(hugo
-    DEPENDS hugo_dir
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs
-    COMMAND hugo
-    VERBATIM
-)
+    add_custom_target(hugo
+        DEPENDS hugo_dir
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/docs
+        COMMAND hugo
+        VERBATIM
+    )
 
-add_custom_target(hugo-deploy
-    DEPENDS hugo
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/deploy-to-ghpages.pl --hugo git@github.com:mongodb/mongo-cxx-driver
-    VERBATIM
-)
+    add_custom_target(hugo-deploy
+        DEPENDS hugo
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/deploy-to-ghpages.pl --hugo git@github.com:mongodb/mongo-cxx-driver
+        VERBATIM
+    )
 
-add_custom_target(docs_dir_current
-    COMMAND ${CMAKE_COMMAND} -E make_directory docs/api/current
-)
+    add_custom_target(docs_dir_current
+        COMMAND ${CMAKE_COMMAND} -E make_directory docs/api/current
+    )
 
-add_custom_target(doxygen-current
-    DEPENDS docs_dir_current
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
-    VERBATIM
-)
+    add_custom_target(doxygen-current
+        DEPENDS docs_dir_current
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND doxygen ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
+        VERBATIM
+    )
 
-add_custom_target(doxygen-all
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/generate-all-apidocs.pl
-    VERBATIM
-)
+    add_custom_target(doxygen-all
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/generate-all-apidocs.pl
+        VERBATIM
+    )
 
-add_custom_target(doxygen-deploy
-    DEPENDS doxygen-all
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND etc/deploy-to-ghpages.pl --doxygen git@github.com:mongodb/mongo-cxx-driver
-    VERBATIM
-)
+    add_custom_target(doxygen-deploy
+        DEPENDS doxygen-all
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMAND etc/deploy-to-ghpages.pl --doxygen git@github.com:mongodb/mongo-cxx-driver
+        VERBATIM
+    )
 
-add_custom_target(format
-    python ${CMAKE_SOURCE_DIR}/etc/clang_format.py format
-    VERBATIM
-)
+    add_custom_target(format
+        python ${CMAKE_SOURCE_DIR}/etc/clang_format.py format
+        VERBATIM
+    )
 
-add_custom_target(format-lint
-    python ${CMAKE_SOURCE_DIR}/etc/clang_format.py lint
-    VERBATIM
-)
+    add_custom_target(format-lint
+        python ${CMAKE_SOURCE_DIR}/etc/clang_format.py lint
+        VERBATIM
+    )
 
-add_custom_target(docs
-    DEPENDS hugo doxygen-current
-)
+    add_custom_target(docs
+        DEPENDS hugo doxygen-current
+    )
+endif()
 
 set(THIRD_PARTY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/third_party)
 
-enable_testing()
+option(BUILD_TESTING "Build test" OFF)
+if(BUILD_TESTING)
+    enable_testing()
+endif()
 
 add_subdirectory(src)
 
-add_subdirectory(examples EXCLUDE_FROM_ALL)
+option(BUILD_EXAMPLES "Build examples" OFF)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples EXCLUDE_FROM_ALL)
+endif()
 
-add_subdirectory(benchmark EXCLUDE_FROM_ALL)
+if(BUILD_TESTING)
+    add_subdirectory(benchmark EXCLUDE_FROM_ALL)
+endif()

@@ -242,4 +242,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}-${MONGOCXX_VERSION}
 )
 
-add_subdirectory(test)
+if(MONGOCXX_BUILD_TESTING)
+  add_subdirectory(test)
+endif()

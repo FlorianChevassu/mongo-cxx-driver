@@ -249,4 +249,6 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PKG}-${BSONCXX_VERSION}
 )
 
-add_subdirectory(test)
+if(BSONCXX_BUILD_TESTING)
+  add_subdirectory(test)
+endif()
